@@ -1,8 +1,8 @@
-var Scene = function() {
-
+function Scene() {
+    THREE.Scene.call( this );
 }
 
-Scene.prototype = new THREE.Scene();
+extend(THREE.Scene, Scene);
 
 Scene.prototype.initScene = function() {
     var ambientLight = new THREE.AmbientLight( 0x606060 );

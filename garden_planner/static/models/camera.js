@@ -4,14 +4,6 @@ function Camera() {
 
 extend(THREE.PerspectiveCamera, Camera);
 
-
-function extend(base, constructor) {
-    var prototype = new Function();
-    prototype.prototype = base.prototype;
-    constructor.prototype = new prototype();
-    constructor.prototype.constructor = constructor;
-}
-
 Camera.prototype.initCamera = function() {
     this.position.x = 0;
     this.position.y = 500;

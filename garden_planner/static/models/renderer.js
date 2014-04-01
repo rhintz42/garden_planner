@@ -1,10 +1,8 @@
-Renderer.prototype = new THREE.WebGLRenderer();
-
 function Renderer() {
-    THREE.WebGLRenderer( this, arguments );
+    THREE.WebGLRenderer.call( this );
 }
-//  This extends the WebGLRenderer class and allows me to call all of
-//      the functions of the superclass and create my own functions
+
+extend(THREE.WebGLRenderer, Renderer);
 
 Renderer.prototype.initRenderer = function() {
     this.setClearColor( 0xf0f0f0 );
