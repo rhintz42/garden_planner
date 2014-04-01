@@ -102,6 +102,9 @@ function Environment() {
     function initObjects() {
         _scene = new Scene();
         _camera = new Camera();
+        _camera.initCamera();
+        _camera2 = new Camera();
+        _camera2.position.x = 3422;
         _renderer = new Renderer();
     }
 
