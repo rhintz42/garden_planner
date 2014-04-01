@@ -1,18 +1,22 @@
 /*
     Things todo
     * Clean up Code and put more stuff into their own models and such
+        * Start with adding the Plant stuff
     * Put scene, camera, and renderer in their own classes
+    * The intersecting of plant objects should not count
+        * Check the type of object
 */
 function Environment() {
     var _scene,
         _camera,
         _renderer,
-        _projector,
+        _projector, //Create a projector model
         _stats,
         _objects;   //Should have all objects (including terrain) in here
                     //Should add 'objectsWithAnimation' that add objects w/ animate()
                     //Should add 'objectsMoveable' or something for objects can move
 
+    // Put most of these into the Plant Model
     var voxelPosition,
         tmpVec,
         normalMatrix,
@@ -20,10 +24,11 @@ function Environment() {
         rollOverMaterial,
         rollOverGeo;
 
+    // Put this into the projector Model
     var mouse2D;
     
     
-
+    //Put this into another file called "events"
     function onDocumentMouseMove( event ) {
 
         event.preventDefault();
@@ -33,6 +38,7 @@ function Environment() {
 
     }
     
+    // Most of this should be set in the plant class
     function setVoxelPosition( intersector ) {
 
         if ( intersector.face === null ) {
@@ -49,6 +55,7 @@ function Environment() {
 
     }
     
+    // This should be in the projector class
     function getRealIntersector( intersects ) {
 
         for( i = 0; i < intersects.length; i++ ) {
@@ -65,12 +72,8 @@ function Environment() {
     function render() {
         var i;
         requestAnimationFrame(render);
-        //for(i = 0; i < _objects.length; i++) {
-        //    _objects[i].animate();
-        //}
 
-
-
+        // Should be in like a projector class
         raycaster = _projector.pickingRay( mouse2D.clone(), _camera );
 
         var intersects = raycaster.intersectObjects( _objects );
@@ -82,8 +85,7 @@ function Environment() {
                 rollOverMesh.position = voxelPosition;
             }
         }
-
-
+        //------------------------------------------------------------
 
         _renderer.render(_scene, _camera);
         _stats.update();
@@ -91,7 +93,6 @@ function Environment() {
 
     function initRenderer() {
         _renderer = new THREE.WebGLRenderer();
-        
         
         _renderer.setClearColor( 0xf0f0f0 );
 
@@ -123,7 +124,6 @@ function Environment() {
 
         _objects = []
 
-
         _stats = new Stats();
         _stats.domElement.style.position = 'absolute';
         _stats.domElement.style.top = '0px';
@@ -139,9 +139,11 @@ function Environment() {
         _projector = new THREE.Projector();
         
         
+        // This should be in the plant class & Make the starting position somewhere far away so can't see at first
         rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
         rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
         rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
+        //-----------------------------------------------------------------------------------------------------
         _scene.add( rollOverMesh );
         
         mouse2D = new THREE.Vector3( 0, 10000, 0.5 );
