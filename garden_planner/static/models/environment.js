@@ -92,32 +92,26 @@ function Environment() {
     }
 
     function initRenderer() {
-        _renderer = new THREE.WebGLRenderer();
-        
-        _renderer.setClearColor( 0xf0f0f0 );
-
-        _renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( _renderer.domElement );
+        _renderer.initRenderer();
     }
 
     function initScene() {
-        var ambientLight = new THREE.AmbientLight( 0x606060 );
-        var directionalLight = new THREE.DirectionalLight( 0xffffff );
+        _scene.initScene();
+    }
 
-        _scene = new THREE.Scene();
-        _scene.add( ambientLight );
-        _scene.add( directionalLight );
+    function initObjects() {
+        _scene = new Scene();
+        _camera = new Camera();
+        _renderer = new Renderer();
     }
 
     function initCamera() {
-        _camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1750 );
-        _camera.position.x = 0;
-        _camera.position.y = 500;
-        _camera.position.z = -1000;
-        _camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
+        _camera.initCamera();
     }
 
     function initVariables() {
+        initObjects();
+
         initScene();
         initCamera();   
         initRenderer();
