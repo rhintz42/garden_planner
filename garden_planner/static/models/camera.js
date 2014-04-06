@@ -4,7 +4,7 @@ function Camera() {
 
 extend(THREE.PerspectiveCamera, Camera);
 
-Camera.prototype.initCamera = function() {
+Camera.prototype.init = function() {
     this.position.x = 0;
     this.position.y = 500;
     this.position.z = -1000;

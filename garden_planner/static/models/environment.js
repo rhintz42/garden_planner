@@ -1,34 +1,29 @@
 /*
     Things todo
-    * Clean up Code and put more stuff into their own models and such
-        * Start with adding the Plant stuff
-    * Put scene, camera, and renderer in their own classes
-    * The intersecting of plant objects should not count
-        * Check the type of object
+    * Put Mouse stuff into Projector Model
+    * Fix up the Plant class so that the addToScene stuff looks better
+    * Clean up the classes so that they are in different sections
+    * Add comments to all of the classes/functions
+    * Create Diagram of everything to keep track of what I'm doing
+    * Look into adding tests
+    * Create another plant mesh object
 */
 function Environment() {
     var _scene,
         _camera,
         _renderer,
-        _projector, //Create a projector model
+        _projector, 
         _stats,
-        _objects;   //Should have all objects (including terrain) in here
-                    //Should add 'objectsWithAnimation' that add objects w/ animate()
+        _rollOverObj,
+        _objects,   //Should have all objects (including terrain) in here
+        _animatedObjects;
                     //Should add 'objectsMoveable' or something for objects can move
-
-    // Put most of these into the Plant Model
-    var voxelPosition,
-        tmpVec,
-        normalMatrix,
-        rollOverMesh,
-        rollOverMaterial,
-        rollOverGeo;
 
     // Put this into the projector Model
     var mouse2D;
     
     
-    //Put this into another file called "events"
+    //Put this into Projector
     function onDocumentMouseMove( event ) {
 
         event.preventDefault();
@@ -38,88 +33,63 @@ function Environment() {
 
     }
     
-    // Most of this should be set in the plant class
-    function setVoxelPosition( intersector ) {
-
-        if ( intersector.face === null ) {
-            console.log( intersector )
-        }
-
-        normalMatrix.getNormalMatrix( intersector.object.matrixWorld );
-
-        tmpVec.copy( intersector.face.normal );
-        tmpVec.applyMatrix3( normalMatrix ).normalize();
-
-        voxelPosition.addVectors( intersector.point, tmpVec );
-        voxelPosition.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
-
-    }
-    
-    // This should be in the projector class
-    function getRealIntersector( intersects ) {
-
-        for( i = 0; i < intersects.length; i++ ) {
-            intersector = intersects[ i ];
-            if ( intersector.object != rollOverMesh ) {
-                return intersector;
-            }
-        }
-
-        return null;
-
-    }
-    
     function render() {
-        var i;
+        var i,
+            intersector;
+
         requestAnimationFrame(render);
 
-        // Should be in like a projector class
-        raycaster = _projector.pickingRay( mouse2D.clone(), _camera );
-
-        var intersects = raycaster.intersectObjects( _objects );
-        if ( intersects.length > 0 ) {
-            intersector = getRealIntersector( intersects );
-
-            if ( intersector ) {
-                setVoxelPosition( intersector );
-                rollOverMesh.position = voxelPosition;
-            }
+        for(i = 0; i < _animatedObjects.length; i++) {
+            _animatedObjects[i].animate();
         }
-        //------------------------------------------------------------
+
+        intersector = _projector.getIntersector( mouse2D.clone(), _camera,
+                                                 _objects, _rollOverObj);
+
+        if ( intersector ) {
+            _projector.setRolloverPosition( intersector );
+            _rollOverObj.position = _projector.getRolloverPosition();
+        }
 
         _renderer.render(_scene, _camera);
         _stats.update();
     }
 
-    function initRenderer() {
-        _renderer.initRenderer();
+    this._initCamera = function() {
+        _camera.init();
     }
 
-    function initScene() {
-        _scene.initScene();
+    this._initRenderer = function() {
+        _renderer.init();
     }
 
-    function initObjects() {
+    this._initScene = function() {
+        _scene.init();
+    }
+
+    this._initProjector = function() {
+        _projector.init(this);
+    }
+
+    this._initObjects = function() {
+        var self = this;
+
         _scene = new Scene();
         _camera = new Camera();
-        _camera.initCamera();
-        _camera2 = new Camera();
-        _camera2.position.x = 3422;
         _renderer = new Renderer();
+        _projector = new Projector();
     }
 
-    function initCamera() {
-        _camera.initCamera();
-    }
+    this.initVariables = function() {
+        this._initObjects();
 
-    function initVariables() {
-        initObjects();
-
-        initScene();
-        initCamera();   
-        initRenderer();
+        this._initScene();
+        this._initCamera();   
+        this._initRenderer();
+        this._initProjector();
 
         _objects = []
+        _animatedObjects = []
 
         _stats = new Stats();
         _stats.domElement.style.position = 'absolute';
@@ -128,21 +98,11 @@ function Environment() {
     }
 
     this.init = function() {
-        initVariables();
+        this.initVariables();
 
-        voxelPosition = new THREE.Vector3();
-        tmpVec = new THREE.Vector3();
-        normalMatrix = new THREE.Matrix3();
-        _projector = new THREE.Projector();
+        _rollOverObj = this.addPlant(0,0,-1000, "rollOverObj");
         
-        
-        // This should be in the plant class & Make the starting position somewhere far away so can't see at first
-        rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
-        rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
-        rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
-        //-----------------------------------------------------------------------------------------------------
-        _scene.add( rollOverMesh );
-        
+        // Put this into the projector Model
         mouse2D = new THREE.Vector3( 0, 10000, 0.5 );
         
         this.addTerrain();
@@ -164,21 +124,32 @@ function Environment() {
         return _renderer;
     }
 
-    this.addObj = function(obj) {
-        _scene.add(obj.getObj());
-        _objects.push(obj.getObj());
+    this.getRollOverObj = function() {
+        return _rollOverObj;
     }
 
-    this.addPlant = function(x, y, z) {
-        var plant = new Plant(x, y, z);
-        this.addObj(plant);
+    this.addObjToLists = function(obj) {
+        _objects.push(obj);
+
+        if(typeof obj.animate === 'function') {
+            _animatedObjects.push(obj);
+        }
+    }
+
+    this.addPlant = function(x, y, z, type) {
+        var self = this,
+            plant = new Plant(self, x, y, z, type);
+
+        return plant;
     }
 
     this.addTerrain = function() {
-        var terrain = new Terrain();
-        _scene.add(terrain.getLines());
-        _scene.add(terrain.getObj());
-        _objects.push(terrain.getObj());
+        var self = this,
+            terrain = new Terrain();
+
+        terrain.addToScene(_scene);
+
+        self.addObjToLists(terrain);
     }
 
     this.init();

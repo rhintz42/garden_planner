@@ -4,7 +4,7 @@ function Scene() {
 
 extend(THREE.Scene, Scene);
 
-Scene.prototype.initScene = function() {
+Scene.prototype.init = function() {
     var ambientLight = new THREE.AmbientLight( 0x606060 );
     var directionalLight = new THREE.DirectionalLight( 0xffffff );
 

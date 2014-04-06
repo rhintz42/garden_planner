@@ -4,7 +4,7 @@ function Renderer() {
 
 extend(THREE.WebGLRenderer, Renderer);
 
-Renderer.prototype.initRenderer = function() {
+Renderer.prototype.init = function() {
     this.setClearColor( 0xf0f0f0 );
 
     this.setSize( window.innerWidth, window.innerHeight );

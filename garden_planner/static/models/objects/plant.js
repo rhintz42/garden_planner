@@ -2,43 +2,96 @@
     * Should have Object class that contains _geometry, _material, and _obj
         that all objects inherit from
 */
-function Plant(x, y, z) {
-    var _geometry,
-        _material,
-        _obj;
 
-    this.init = function(x, y, z) {
-        _geometry = new THREE.CubeGeometry(50,50,50);
-        _material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-        _obj = new THREE.Mesh( _geometry, _material );
+function Plant(environment, x, y, z, type) {
+    var self = this,
+        geometry,
+        material,
+        objFile;
 
-        this.setPosition(x, y, z);
+    if(type === "rollOverObj") {
+        material = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
+    } else {
+        material = new THREE.MeshNormalMaterial();
+        material.shading = THREE.SmoothShading
     }
+    
+    objFile = '/static/monkey.js';
 
-    this.getObj = function() {
-        return _obj;
+    var loader = new THREE.JSONLoader();
+    loader.load( objFile, function ( geometry ) {
+        geometry.computeVertexNormals();
+
+        THREE.Mesh.call( self, geometry, material )
+        self.position.set(x, y, z);
+        self.scale.x = self.scale.y = self.scale.z = 50;
+        self.rotation.y = 3.14;
+        self.matrixAutoUpdate = true;
+        
+        //The addToScene should probably be an environment function
+        self.addToScene(environment.getScene());
+        environment.addObjToLists(self);
+        
+        self.objectLoaded = true;
+    } );
+
+    if(self.objectLoaded === undefined) {
+        self.objectLoaded = false;
     }
+    self.turnAnimationOn();
+}
 
-    this.animate = function() {
-        _obj.rotation.x += 0.01;
-        _obj.rotation.y += 0.01;
+extend(THREE.Mesh, Plant);
+
+//--------------------------- addToScene Method ------------------------
+
+Plant.prototype.addToScene = function(scene) {
+    var self = this;
+
+    scene.add(self);
+}
+
+
+
+Plant.prototype.hasObjectLoaded = function() {
+    var self = this;
+    
+    return self.objectLoaded;
+}
+
+
+
+
+
+
+//-------------------------- Animation Methods -------------------------
+
+Plant.prototype.animate = function() {
+    var self = this;
+
+    if(self.hasObjectLoaded()) {
+        self.rotation.y += 0.01;
     }
+}
 
-    this.setX = function(x) {
-        _obj.position.setX(x);
+Plant.prototype.turnAnimationOff = function() {
+    var self = this;
+
+    self.animationOn = false;
+}
+
+Plant.prototype.turnAnimationOn = function() {
+    var self = this;
+
+    self.animationOn = true;
+}
+
+Plant.prototype.toggleAnimation = function() {
+    var self = this;
+
+    if(self.animationOn) {
+        self.turnAnimationOff();
+    } else {
+        self.turnAnimationOn();
     }
-
-    this.setY = function(y) {
-        _obj.position.setY(y);
-    }
-
-    this.setZ = function(z) {
-        _obj.position.setZ(z);
-    }
-
-    this.setPosition = function(x, y, z) {
-        _obj.position.set(x, y, z);
-    }
-
-    this.init(x, y, z);
 }

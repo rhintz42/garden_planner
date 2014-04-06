@@ -10,6 +10,7 @@
         <script src="/static/models/scene.js"></script>
         <script src="/static/models/camera.js"></script>
         <script src="/static/models/renderer.js"></script>
+        <script src="/static/models/projector.js"></script>
         <script src="/static/models/objects/terrain.js"></script>
         <script src="/static/models/objects/plant.js"></script>
         <script src="/static/models/environment.js"></script>
