@@ -1,33 +1,84 @@
 
-function Terrain() {
+function Terrain(environment) {
     var self = this,
-        grid,
-        size = 500,
-        step = 50,
-        i;
+        geometry,
+        material;
     
-    grid = self.createGrid();
-        
-    THREE.Mesh.call( self, new THREE.PlaneGeometry( 1000, 1000 ), new THREE.MeshBasicMaterial() );
+    self.size = 500;
+    self.step = 50;
 
-    self.rotation.x = - Math.PI / 2;
-    self.visible = false;
-    self.grid = grid;
+    data = new Float32Array( (self._getNumSquaresWidth()*self._getNumSquaresDepth()) );
+
+    self.environment = environment;
+
+    geometry = new THREE.PlaneGeometry( self.size*2,
+                                        self.size*2,
+                                        self._getNumSquaresWidth() - 1,
+                                        self._getNumSquaresDepth() - 1 );
+    geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
+    
+    for ( var i = 0; i < geometry.vertices.length; i ++ ) {
+        geometry.vertices[ i ].y = 0;
+    }
+    
+
+    material = new THREE.MeshBasicMaterial();
+
+    THREE.Mesh.call( self, geometry, material );
+
+    self.visible = true;
+
+    self._addToEnvironment();
+
 }
 
 extend(THREE.Mesh, Terrain);
 
 
-
-
-
-//--------------------------- addToScene Method ------------------------
-
-Terrain.prototype.addToScene = function(scene) {
+// This is just a tests function
+Terrain.prototype._makeGroundGoUp = function() {
     var self = this;
 
-    scene.add(self.getGrid());
-    scene.add(self);
+    for(var i = 0; i<self.geometry.vertices.length; i++) {
+        self.geometry.vertices[i].y = i;
+    }
+}
+
+Terrain.prototype._getNumSquaresWidth = function() {
+    var self = this;
+
+    return (self.size/self.step) * 2;
+}
+
+Terrain.prototype._getNumSquaresDepth = function() {
+    var self = this;
+
+    return (self.size/self.step) * 2;
+}
+
+Terrain.prototype._addToEnvironment = function() {
+    var self = this;
+
+    self.environment.addToScene(self);
+    self.environment.addToLists(self);
+}
+
+Terrain.prototype.indexToRow = function(index) {
+    var self = this;
+
+    return Math.floor( index / self._getNumSquaresWidth() );
+}
+
+Terrain.prototype.indexToCol = function(index) {
+    var self = this;
+
+    return index % self._getNumSquaresWidth();
+}
+
+Terrain.prototype.rowColToIndex = function(row, col) {
+    var self = this;
+
+    return (row * self._getNumSquaresWidth()) + col;
 }
 
 
@@ -37,7 +88,18 @@ Terrain.prototype.addToScene = function(scene) {
 
 
 
-//----------------------------- Grid Functions --------------------------
+
+/* PARTIAL IMPLEMENTATION OF A GRID THAT CAN VARY IN HEIGHT
+
+
+Terrain.prototype._updateGrid = function() {
+    var self = this,
+        grid = self.getGrid();
+
+    for (i = 0; i < grid.geometry.vertices.length; i++) {
+        grid.geometry.vertices[i].y = (i*100)+2;
+    }
+}
 
 Terrain.prototype.getGrid = function() {
     var self = this;
@@ -46,20 +108,63 @@ Terrain.prototype.getGrid = function() {
 }
 
 Terrain.prototype.createGrid = function() {
-    var size = 500,
-        step = 50,
+    var self = this,
         geometry,
         material,
-        grid;
+        grid,
+        numRowLines,
+        numColLines,
+        row,
+        col,
+        xPos,
+        yPos;
         
     geometry = new THREE.Geometry();
 
-    for (i = - size; i <= size; i += step) {
-        geometry.vertices.push( new THREE.Vector3( - size, 0, i ) );
-        geometry.vertices.push( new THREE.Vector3(   size, 0, i ) );
+    numRowLines = self._getNumSquaresDepth();
+    numColLines = self._getNumSquaresWidth();
 
-        geometry.vertices.push( new THREE.Vector3( i, 0, - size ) );
-        geometry.vertices.push( new THREE.Vector3( i, 0,   size ) );
+    // Creates most of the lines for the Grid
+    for (row = 0; row < numRowLines; row++) {
+        zPos = -self.size + row*self.step;
+
+        for (col = 0; col < numColLines; col++) {
+            xPos = -self.size + col*self.step;
+            
+            currentIndex = self.rowColToIndex(row, col);
+            nextRowIndex = self.rowColToIndex(row+1, col);
+            nextColIndex = self.rowColToIndex(row, col+1);
+            
+            startGroundPoint = self.geometry.vertices[currentIndex];
+            endRowGroundPoint = self.geometry.vertices[nextRowIndex];
+            endColGroundPoint = self.geometry.vertices[nextColIndex];
+            
+            if(endColGroundPoint) {
+                geometry.vertices.push( new THREE.Vector3( xPos, startGroundPoint.z+1, zPos ) );
+                geometry.vertices.push( new THREE.Vector3( xPos+self.step, endColGroundPoint.z+1, zPos ) );
+            } else {
+                geometry.vertices.push( new THREE.Vector3( xPos, startGroundPoint.z+1, zPos ) );
+                geometry.vertices.push( new THREE.Vector3( xPos+self.step, 1, zPos ) );
+            }
+
+            if(endRowGroundPoint) {
+                geometry.vertices.push( new THREE.Vector3( xPos, startGroundPoint.z+1, zPos ) );
+                geometry.vertices.push( new THREE.Vector3( xPos, endRowGroundPoint.z+1, zPos+self.step ) );
+            } else {
+                geometry.vertices.push( new THREE.Vector3( xPos, startGroundPoint.z+1, zPos ) );
+                geometry.vertices.push( new THREE.Vector3( xPos, 1, zPos+self.step ) );
+            }
+        }
+        
+        geometry.vertices.push( new THREE.Vector3( self.size, 1, zPos ) );
+        geometry.vertices.push( new THREE.Vector3( self.size, 1, zPos+self.step ) );
+    }
+    // Creates the last row of lines for the Grid
+    for (col = 0; col < numColLines; col++) {
+        xPos = -self.size + col*self.step;
+
+        geometry.vertices.push( new THREE.Vector3( xPos, 1, self.size ) );
+        geometry.vertices.push( new THREE.Vector3( xPos+self.step, 1, self.size ) );
     }
 
     material = new THREE.LineBasicMaterial( { color: 0x000000, opacity: 0.2 } );
@@ -69,3 +174,4 @@ Terrain.prototype.createGrid = function() {
 
     return grid;
 }
+*/

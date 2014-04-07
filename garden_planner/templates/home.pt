@@ -22,8 +22,8 @@
 
             var gardenPlanner = new GardenPlanner();
 
-            gardenPlanner.addPlant(-100,200,0);
-            gardenPlanner.addPlant(100,200,0);
+            gardenPlanner.addPlant(-100,0,0);
+            gardenPlanner.addPlant(100,0,0);
             
         </script>
     </body>

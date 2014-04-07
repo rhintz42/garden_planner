@@ -1,12 +1,38 @@
 /*
     Things todo
-    * Put Mouse stuff into Projector Model
-    * Fix up the Plant class so that the addToScene stuff looks better
     * Clean up the classes so that they are in different sections
     * Add comments to all of the classes/functions
     * Create Diagram of everything to keep track of what I'm doing
-    * Look into adding tests
     * Create another plant mesh object
+
+    * Start focusing on the terrain
+        * Give the terrain a proper texture
+            * Copy from old_garden_planner
+        * Be able to edit the terrain to go up
+            * If an object there, the object goes up with the ground
+        * Be able to edit the terrain to go down
+        * Be able to make the terrain not rectangle
+        * Be able to edit the terrain to get wider at points
+        * Be able to edit the terrain to get narrower at points
+    * Start focusing more on Plants
+        * Be able to place plants down on the ground
+            * Be able to get lower/higher based on the terrain
+        * Be able to pick plants back up
+        * Be able to remove plants
+        * Be able to sense that a plant area is where about to put another plant
+            * Show red if this is the case
+    * Be able to rotate the camera
+    * Terrain should not be a subclass of Mesh
+        * Ground and Grid should be subclasses of Terrain and should be created
+            from the terrain class
+    * Look into adding tests
+
+
+
+
+
+NOTES:
+* Not pur
 */
 function Environment() {
     var _scene,
@@ -18,20 +44,6 @@ function Environment() {
         _objects,   //Should have all objects (including terrain) in here
         _animatedObjects;
                     //Should add 'objectsMoveable' or something for objects can move
-
-    // Put this into the projector Model
-    var mouse2D;
-    
-    
-    //Put this into Projector
-    function onDocumentMouseMove( event ) {
-
-        event.preventDefault();
-
-        mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-    }
     
     function render() {
         var i,
@@ -43,12 +55,13 @@ function Environment() {
             _animatedObjects[i].animate();
         }
 
-        intersector = _projector.getIntersector( mouse2D.clone(), _camera,
-                                                 _objects, _rollOverObj);
+        intersector = _projector.getIntersector( _camera, _objects, _rollOverObj );
 
         if ( intersector ) {
             _projector.setRolloverPosition( intersector );
             _rollOverObj.position = _projector.getRolloverPosition();
+        } else {
+            _rollOverObj.position = _projector.getOutOfViewPosition();
         }
 
         _renderer.render(_scene, _camera);
@@ -102,14 +115,8 @@ function Environment() {
 
         _rollOverObj = this.addPlant(0,0,-1000, "rollOverObj");
         
-        // Put this into the projector Model
-        mouse2D = new THREE.Vector3( 0, 10000, 0.5 );
-        
         this.addTerrain();
         render();
-        
-        
-        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
     }
 
     this.getScene = function() {
@@ -128,12 +135,18 @@ function Environment() {
         return _rollOverObj;
     }
 
-    this.addObjToLists = function(obj) {
+    this.addToLists = function(obj) {
         _objects.push(obj);
 
         if(typeof obj.animate === 'function') {
             _animatedObjects.push(obj);
         }
+    }
+
+    this.addToScene = function( obj ) {
+        var self = this;
+
+        _scene.add( obj );
     }
 
     this.addPlant = function(x, y, z, type) {
@@ -145,11 +158,9 @@ function Environment() {
 
     this.addTerrain = function() {
         var self = this,
-            terrain = new Terrain();
+            terrain = new Terrain(self);
 
-        terrain.addToScene(_scene);
-
-        self.addObjToLists(terrain);
+        return terrain;
     }
 
     this.init();

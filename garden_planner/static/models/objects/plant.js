@@ -2,38 +2,18 @@
     * Should have Object class that contains _geometry, _material, and _obj
         that all objects inherit from
 */
-
 function Plant(environment, x, y, z, type) {
     var self = this,
         geometry,
         material,
-        objFile;
+        objFile,
+        loader;
 
-    if(type === "rollOverObj") {
-        material = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
-    } else {
-        material = new THREE.MeshNormalMaterial();
-        material.shading = THREE.SmoothShading
-    }
-    
-    objFile = '/static/monkey.js';
+    material = _getShading( type );
+    objFile = _getObjFile();
+    self.environment = environment;
 
-    var loader = new THREE.JSONLoader();
-    loader.load( objFile, function ( geometry ) {
-        geometry.computeVertexNormals();
-
-        THREE.Mesh.call( self, geometry, material )
-        self.position.set(x, y, z);
-        self.scale.x = self.scale.y = self.scale.z = 50;
-        self.rotation.y = 3.14;
-        self.matrixAutoUpdate = true;
-        
-        //The addToScene should probably be an environment function
-        self.addToScene(environment.getScene());
-        environment.addObjToLists(self);
-        
-        self.objectLoaded = true;
-    } );
+    self.loadObj(x, y, z, objFile, material, geometry);
 
     if(self.objectLoaded === undefined) {
         self.objectLoaded = false;
@@ -41,27 +21,70 @@ function Plant(environment, x, y, z, type) {
     self.turnAnimationOn();
 }
 
-extend(THREE.Mesh, Plant);
+//-------------------------------- Private Functions ----------------------
 
-//--------------------------- addToScene Method ------------------------
+function _getShading( type ) {
+    var material;
 
-Plant.prototype.addToScene = function(scene) {
-    var self = this;
+    if(type === "rollOverObj") {
+        material = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
+    } else {
+        material = new THREE.MeshNormalMaterial();
+    }
 
-    scene.add(self);
+    material.shading = THREE.SmoothShading;
+
+    return material;
 }
 
+function _getObjFile() {
+    var objFile;
 
+    objFile = '/static/monkey.js';
+
+    return objFile;
+}
+
+extend(THREE.Mesh, Plant);
+
+// ----------------------------- Private Methods -----------------------------
+
+Plant.prototype._addToEnvironment = function() {
+    var self = this;
+
+    self.environment.addToScene(self);
+    self.environment.addToLists(self);
+}
+
+// ------------------------------ loadObj Method ------------------------------
+
+Plant.prototype.loadObj = function(x, y, z, objFile, material, geometry) {
+    var self = this,
+        loader;
+
+    loader = new THREE.JSONLoader();
+    loader.load( objFile, function ( geometry ) {
+        geometry.computeVertexNormals();
+
+        THREE.Mesh.call( self, geometry, material )
+        self.position.set(x, y, z);
+        self.scale.x = self.scale.y = self.scale.z = 50;
+        self.rotation.y = Math.PI;
+        self.matrixAutoUpdate = true;
+        
+        self._addToEnvironment();
+        
+        self.objectLoaded = true;
+    } );
+}
+
+//--------------------------- addToScene Method ------------------------
 
 Plant.prototype.hasObjectLoaded = function() {
     var self = this;
     
     return self.objectLoaded;
 }
-
-
-
-
 
 
 //-------------------------- Animation Methods -------------------------
