@@ -7,6 +7,6 @@ extend(THREE.PerspectiveCamera, Camera);
 Camera.prototype.init = function() {
     this.position.x = 0;
     this.position.y = 500;
-    this.position.z = -1000;
+    this.position.z = 1000;
     this.lookAt( new THREE.Vector3( 0, 0, 0 ) );
 }

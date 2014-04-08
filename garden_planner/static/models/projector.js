@@ -1,7 +1,4 @@
 function Projector() {
-    var _mouse2D,
-        _mouseMoved;
-
     THREE.Projector.call(this);
 }
 
@@ -18,31 +15,10 @@ Projector.prototype.init = function(environment) {
     self._tmpVec = new THREE.Vector3();
     self._normalMatrix = new THREE.Matrix3();
     self._intersector = undefined;
-
-    _mouse2D = new THREE.Vector3( 0, 10000, 0.5 );
-    setMouseMoved( false );
-        
-    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 }
 
 //------------------------------ Private Functions ----------------------------
 
-function hasMouseMoved() {
-    return _mouseMoved;
-}
-
-function setMouseMoved( hasMouseMoved ) {
-    _mouseMoved = hasMouseMoved;
-}
-
-function onDocumentMouseMove( event ) {
-    event.preventDefault();
-
-    _mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    _mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-    setMouseMoved( true );
-
-}
 
 //------------------------------ Private Methods ------------------------------
 
@@ -61,24 +37,21 @@ Projector.prototype._getRealIntersector = function( intersects, rollOverObj ) {
 
 //------------------------------ Public Methods -------------------------------
 
-Projector.prototype.getIntersector = function( camera, objects, rollOverObj ) {
+Projector.prototype.getIntersector = function( mouse2D, camera, objects, rollOverObj ) {
     var self = this,
         raycaster,
         intersects;
         
-    raycaster = self.pickingRay( _mouse2D, camera );
+    raycaster = self.pickingRay( mouse2D, camera );
 
-    if(hasMouseMoved()) {
-        intersects = raycaster.intersectObjects( objects );
-        
-        if ( intersects.length > 0 ) {
-            self._intersector = self._getRealIntersector( intersects, rollOverObj );
-        } else {
-            self._intersector = null;
-        }
+    intersects = raycaster.intersectObjects( objects );
+    
+    if ( intersects.length > 0 ) {
+        self._intersector = self._getRealIntersector( intersects, rollOverObj );
+    } else {
+        self._intersector = null;
     }
 
-    setMouseMoved( false );
     return self._intersector;
 }
 

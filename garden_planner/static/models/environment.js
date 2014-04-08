@@ -42,12 +42,14 @@ function Environment() {
         _stats,
         _rollOverObj,
         _objects,   //Should have all objects (including terrain) in here
-        _animatedObjects;
+        _mouse2D,
+        _animatedObjects,
+        _self;
                     //Should add 'objectsMoveable' or something for objects can move
     
     function render() {
-        var i,
-            intersector;
+        var self = this,
+            i;
 
         requestAnimationFrame(render);
 
@@ -55,10 +57,13 @@ function Environment() {
             _animatedObjects[i].animate();
         }
 
-        intersector = _projector.getIntersector( _camera, _objects, _rollOverObj );
+        if(hasMouseMoved()) {
+            self._intersectorCurrent = _projector.getIntersector( _mouse2D, _camera, _objects, _rollOverObj );
+            setMouseMoved( false );
+        } 
 
-        if ( intersector ) {
-            _projector.setRolloverPosition( intersector );
+        if ( self._intersectorCurrent ) {
+            _projector.setRolloverPosition( self._intersectorCurrent );
             _rollOverObj.position = _projector.getRolloverPosition();
         } else {
             _rollOverObj.position = _projector.getOutOfViewPosition();
@@ -66,6 +71,40 @@ function Environment() {
 
         _renderer.render(_scene, _camera);
         _stats.update();
+    }
+
+    function hasMouseMoved() {
+        return _mouseMoved;
+    }
+
+    function setMouseMoved( hasMouseMoved ) {
+        _mouseMoved = hasMouseMoved;
+    }
+
+    function onDocumentMouseMove( event ) {
+        event.preventDefault();
+
+        _mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        _mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        setMouseMoved( true );
+
+    }
+
+    this.onDocumentMouseDown = function( event ) {
+        var self = _self;
+
+        event.preventDefault();
+
+        _mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        _mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+        self._intersectorCurrent = _projector.getIntersector( _mouse2D, _camera, _objects, _rollOverObj );
+        
+        //self._terrain.getPointClosestTo(self._intersectorCurrent);
+        self._terrain.setFaceMaterial(self._intersectorCurrent, 'grass');
+        
+        setMouseMoved( true );
+
     }
 
     this._initCamera = function() {
@@ -100,6 +139,8 @@ function Environment() {
         this._initCamera();   
         this._initRenderer();
         this._initProjector();
+        this._intersectorCurrent = null;
+        _self = this;
 
         _objects = []
         _animatedObjects = []
@@ -111,11 +152,20 @@ function Environment() {
     }
 
     this.init = function() {
-        this.initVariables();
+        var self = this;
 
-        _rollOverObj = this.addPlant(0,0,-1000, "rollOverObj");
+        self.initVariables();
+
+        _rollOverObj = self.addPlant(0,0,-1000, "rollOverObj");
         
-        this.addTerrain();
+        self._terrain = self.addTerrain();
+        
+        _mouse2D = new THREE.Vector3( 0, 10000, 0.5 );
+
+        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+        document.addEventListener( 'mousedown', self.onDocumentMouseDown, false );
+        setMouseMoved( false );
+
         render();
     }
 
