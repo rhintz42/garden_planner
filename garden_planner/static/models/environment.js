@@ -1,4 +1,5 @@
 /*
+    THIS SHOULD BE A CONTROLLER, NOT A MODEL
     Things todo
     * Clean up the classes so that they are in different sections
     * Add comments to all of the classes/functions
