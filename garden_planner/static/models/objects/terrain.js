@@ -64,16 +64,23 @@ function Terrain(environment) {
     }
 
     //material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    /*
     materials = []
     materials.push(new THREE.MeshBasicMaterial({ color: 0xff0000 }));
     materials.push(new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
     materials.push(new THREE.MeshBasicMaterial({ color: 0x0000ff }));
 
+    material = new THREE.MeshFaceMaterial(materials);
+    */
+
+    material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('static/images/texture-atlas2.jpg') } );
+
     for(i = 0; i < geometry.faces.length; i++) {
         geometry.faces[i].materialIndex = i % 3;
     }
 
-    material = new THREE.MeshFaceMaterial(materials);
+    geometry.dynamic = true;
+
 
     //THREE.Mesh.call( self, geometry, material );
     self.mesh = new THREE.Mesh( geometry, material );
@@ -88,6 +95,13 @@ function Terrain(environment) {
 
     self.geometry = geometry;
     */
+
+    self.bricks = [new THREE.Vector2(0, .666), new THREE.Vector2(.5, .666), new THREE.Vector2(.5, 1), new THREE.Vector2(0, 1)];
+    self.clouds = [new THREE.Vector2(.5, .666), new THREE.Vector2(1, .666), new THREE.Vector2(1, 1), new THREE.Vector2(.5, 1)];
+    self.crate = [new THREE.Vector2(0, .333), new THREE.Vector2(.5, .333), new THREE.Vector2(.5, .666), new THREE.Vector2(0, .666)];
+    self.stone = [new THREE.Vector2(.5, .333), new THREE.Vector2(1, .333), new THREE.Vector2(1, .666), new THREE.Vector2(.5, .666)];
+    self.water1 = [new THREE.Vector2(0, 0), new THREE.Vector2(.5, 0), new THREE.Vector2(.5, .333), new THREE.Vector2(0, .333)];
+    self.water2 = [new THREE.Vector2(.5, 0), new THREE.Vector2(1, 0), new THREE.Vector2(1, .333), new THREE.Vector2(.5, .333)];
 
     self._addToEnvironment();
 
@@ -126,8 +140,6 @@ Terrain.prototype.setFaceMaterial = function(faceIndex, terrainType) {
         environment,
         materials;
 
-    faceIndex = 0;
-
     if(terrainType === 'grass') {
         materialIndex = 2;
     } else if (terrainType === 'rock') {
@@ -137,19 +149,52 @@ Terrain.prototype.setFaceMaterial = function(faceIndex, terrainType) {
 
     //self.geometry.faces[faceIndex].materialIndex = materialIndex;
 
-    geometry = new THREE.PlaneGeometry( self.getWidthInPixels(),
+    /*geometry = new THREE.PlaneGeometry( self.getWidthInPixels(),
                                         self.getDepthInPixels(),
                                         self._getNumSquaresWidth() - 1,
                                         self._getNumSquaresDepth() - 1 );
 
     geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
+    */
+    //geometry = self.mesh.geometry;
+    //self.mesh.geometry.faceVertexUvs[0] = [];
+    self.mesh.geometry.uvsNeedUpdate = true;
+
+    self.mesh.geometry.faceVertexUvs[0][faceIndex.faceIndex] = [ self.water2[0], self.water2[1], self.water2[3] ];
+    //self.mesh.geometry.faceVertexUvs[0][faceIndex.faceIndex+1] = [ self.bricks[1], self.bricks[2], self.bricks[3] ];
+    /*
+    for(i = 0; i < self.mesh.geometry.faces.length; i+=12) {
+        self.mesh.geometry.faceVertexUvs[0][i] = [ self.bricks[0], self.bricks[1], self.bricks[3] ];
+        self.mesh.geometry.faceVertexUvs[0][i+1] = [ self.bricks[1], self.bricks[2], self.bricks[3] ];
+         
+        self.mesh.geometry.faceVertexUvs[0][i+2] = [ self.clouds[0], self.clouds[1], self.clouds[3] ];
+        self.mesh.geometry.faceVertexUvs[0][i+3] = [ self.clouds[1], self.clouds[2], self.clouds[3] ];
+         
+        self.mesh.geometry.faceVertexUvs[0][i+4] = [ self.crate[0], self.crate[1], self.crate[3] ];
+        self.mesh.geometry.faceVertexUvs[0][i+5] = [ self.crate[1], self.crate[2], self.crate[3] ];
+         
+        self.mesh.geometry.faceVertexUvs[0][i+6] = [ self.stone[0], self.stone[1], self.stone[3] ];
+        self.mesh.geometry.faceVertexUvs[0][i+7] = [ self.stone[1], self.stone[2], self.stone[3] ];
+         
+        self.mesh.geometry.faceVertexUvs[0][i+8] = [ self.water[0], self.water[1], self.water[3] ];
+        self.mesh.geometry.faceVertexUvs[0][i+9] = [ self.water[1], self.water[2], self.water[3] ];
+         
+        self.mesh.geometry.faceVertexUvs[0][i+10] = [ self.wood[0], self.wood[1], self.wood[3] ];
+        self.mesh.geometry.faceVertexUvs[0][i+11] = [ self.wood[1], self.wood[2], self.wood[3] ];
+    }
+    */
+    
+    /*
+    geometry.faceVertexUvs[0] = [];
 
     for(i = 0; i < geometry.faces.length; i++) {
-        geometry.faces[i].materialIndex = i % 2;
+        geometry.facesVertexUvs[0][i].materialIndex = i % 2;
     }
-
+    */
     //self.geometry = geometry;
     //geometry.verticesNeedUpdate = true;
+
+    /*
     material = self.mesh.material;
 
     scene = self.environment.getScene();
@@ -158,7 +203,7 @@ Terrain.prototype.setFaceMaterial = function(faceIndex, terrainType) {
     self.mesh = new THREE.Mesh( geometry, material );
 
     scene.add(self.mesh);
-    
+    */
     //self.geometry.needsUpdate = true;
     //self.geometry.elementsNeedUpdate = true;
 
