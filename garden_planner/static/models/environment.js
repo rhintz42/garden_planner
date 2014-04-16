@@ -1,4 +1,6 @@
 /*
+    PUT OPERATION STUFF INTO LIB
+    
     THE LOOPS AND SUCH IN THIS SHOULD BE A CONTROLLER, NOT A MODEL
         * Make controllers for actions like "edit_terrain" and such
     Things todo
