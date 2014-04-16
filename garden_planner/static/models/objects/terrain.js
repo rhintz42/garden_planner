@@ -1,4 +1,6 @@
-
+/*
+*    PUT OPERATION STUFF INTO LIB
+*/
 function Terrain(environment) {
     var self = this,
         geometry,
