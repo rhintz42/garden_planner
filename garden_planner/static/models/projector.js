@@ -68,7 +68,10 @@ Projector.prototype.getRolloverPosition = function() {
 }
 
 Projector.prototype.setRolloverPosition = function( intersector ) {
-    var self = this;
+    var self = this,
+        step;
+
+    step = self._environment.getStep();
 
     if ( intersector.face === null ) {
         console.log( intersector )
@@ -80,5 +83,10 @@ Projector.prototype.setRolloverPosition = function( intersector ) {
     self._tmpVec.applyMatrix3( self._normalMatrix ).normalize();
 
     self._rolloverPosition.addVectors( intersector.point, self._tmpVec );
-    self._rolloverPosition.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+
+    // This is the part that will go every 50. If you want it to be smooth,
+    //  comment this out
+    self._rolloverPosition.divideScalar( step ).floor().multiplyScalar( step ).addScalar( step/2 );
+
+    self._rolloverPosition.y = self._environment.getHeightFromIntersector(intersector, self._rolloverPosition);
 }

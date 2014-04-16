@@ -37,104 +37,33 @@ NOTES:
 * Not pur
 */
 function Environment() {
-    var _scene,
-        _camera,
-        _renderer,
-        _projector, 
-        _stats,
-        _rollOverObj,
-        _objects,   //Should have all objects (including terrain) in here
-        _mouse2D,
-        _animatedObjects,
-        _self;
-                    //Should add 'objectsMoveable' or something for objects can move
-    
-    function render() {
-        var self = this,
-            i;
-
-        requestAnimationFrame(render);
-
-        for(i = 0; i < _animatedObjects.length; i++) {
-            _animatedObjects[i].animate();
-        }
-
-        if(hasMouseMoved()) {
-            self._intersectorCurrent = _projector.getIntersector( _mouse2D, _camera, _objects, _rollOverObj );
-            setMouseMoved( false );
-        } 
-
-        if ( self._intersectorCurrent ) {
-            _projector.setRolloverPosition( self._intersectorCurrent );
-            _rollOverObj.position = _projector.getRolloverPosition();
-        } else {
-            _rollOverObj.position = _projector.getOutOfViewPosition();
-        }
-
-        _renderer.render(_scene, _camera);
-        _stats.update();
-    }
-
-    function hasMouseMoved() {
-        return _mouseMoved;
-    }
-
-    function setMouseMoved( hasMouseMoved ) {
-        _mouseMoved = hasMouseMoved;
-    }
-
-    function onDocumentMouseMove( event ) {
-        event.preventDefault();
-
-        _mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        _mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-        setMouseMoved( true );
-
-    }
-
-    this.onDocumentMouseDown = function( event ) {
-        var self = _self;
-
-        event.preventDefault();
-
-        _mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        _mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-        self._intersectorCurrent = _projector.getIntersector( _mouse2D, _camera, _objects, _rollOverObj );
-        
-        //self._terrain.getPointClosestTo(self._intersectorCurrent);
-        self._terrain.setFaceMaterial(self._intersectorCurrent, 'grass');
-        
-        setMouseMoved( true );
-
-    }
 
     this._initCamera = function() {
-        _camera.init();
-    }
-
-    this._initRenderer = function() {
-        _renderer.init();
-    }
-
-    this._initScene = function() {
-        _scene.init();
-    }
-
-    this._initProjector = function() {
-        _projector.init(this);
+        this._camera.init();
     }
 
     this._initObjects = function() {
         var self = this;
 
-        _scene = new Scene();
-        _camera = new Camera();
-        _renderer = new Renderer();
-        _projector = new Projector();
+        self._scene = new Scene();
+        self._camera = new Camera();
+        self._renderer = new Renderer();
+        self._projector = new Projector();
     }
 
-    this.initVariables = function() {
+    this._initProjector = function() {
+        this._projector.init(this);
+    }
+
+    this._initRenderer = function() {
+        this._renderer.init();
+    }
+
+    this._initScene = function() {
+        this._scene.init();
+    }
+
+    this._initVariables = function() {
         this._initObjects();
 
         this._initScene();
@@ -142,63 +71,29 @@ function Environment() {
         this._initRenderer();
         this._initProjector();
         this._intersectorCurrent = null;
-        _self = this;
+        this._mouseMoved = false;
 
-        _objects = []
-        _animatedObjects = []
+        this._animatedObjects = [];
+        this._objects = []
 
-        _stats = new Stats();
-        _stats.domElement.style.position = 'absolute';
-        _stats.domElement.style.top = '0px';
-        document.body.appendChild( _stats.domElement );
+        this._stats = new Stats();
+        this._stats.domElement.style.position = 'absolute';
+        this._stats.domElement.style.top = '0px';
+        document.body.appendChild( this._stats.domElement );
     }
 
-    this.init = function() {
-        var self = this;
-
-        self.initVariables();
-
-        _rollOverObj = self.addPlant(0,0,-1000, "rollOverObj");
-        
-        self._terrain = self.addTerrain();
-        
-        _mouse2D = new THREE.Vector3( 0, 10000, 0.5 );
-
-        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-        document.addEventListener( 'mousedown', self.onDocumentMouseDown, false );
-        setMouseMoved( false );
-
-        render();
-    }
-
-    this.getScene = function() {
-        return _scene;
-    }
-
-    this.getCamera = function() {
-        return _camera;
-    }
-
-    this.getRenderer = function() {
-        return _renderer;
-    }
-
-    this.getRollOverObj = function() {
-        return _rollOverObj;
-    }
-
-    this.addToLists = function(obj) {
-        _objects.push(obj);
+    this.addObjToLists = function(obj) {
+        this._objects.push(obj);
 
         if(typeof obj.animate === 'function') {
-            _animatedObjects.push(obj);
+            this._animatedObjects.push(obj);
         }
     }
 
-    this.addToScene = function( obj ) {
+    this.addObjToScene = function( obj ) {
         var self = this;
 
-        _scene.add( obj );
+        this._scene.add( obj );
     }
 
     this.addPlant = function(x, y, z, type) {
@@ -213,6 +108,128 @@ function Environment() {
             terrain = new Terrain(self);
 
         return terrain;
+    }
+
+    this.animate = function() {
+        var self = this,
+            i;
+
+        for(i = 0; i < self._animatedObjects.length; i++) {
+            self._animatedObjects[i].animate();
+        }
+    }
+
+    this.getCamera = function() {
+        return this._camera;
+    }
+
+    this.getRenderer = function() {
+        return this._renderer;
+    }
+
+    this.getRollOverObj = function() {
+        return this._rollOverObj;
+    }
+
+    this.getScene = function() {
+        return this._scene;
+    }
+
+    this.hasMouseMoved = function() {
+        return this._mouseMoved;
+    }
+
+    this.init = function() {
+        var self = this;
+
+        self._initVariables();
+
+        self._rollOverObj = self.addPlant(0,0,-1000, "rollOverObj");
+        
+        self._terrain = self.addTerrain();
+        
+        self._mouse2D = new THREE.Vector3( 0, 10000, 0.5 );
+
+        document.addEventListener( 'mousemove', self.onDocumentMouseMove.bind(self), false );
+        document.addEventListener( 'mousedown', self.onDocumentMouseDown.bind(self), false );
+        self.setMouseMoved( false );
+    }
+
+    this.onDocumentMouseDown = function( event ) {
+        var self = this;
+
+        event.preventDefault();
+
+        self._mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        self._mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+        self._intersectorCurrent = self._projector.getIntersector( self._mouse2D, self._camera, self._objects, self._rollOverObj );
+
+        type = "setTexture";
+        
+        if(type === "setTexture") {
+            self._terrain.setFaceTexture(self._intersectorCurrent, 'brick');
+        } else if (type === "groundUp") {
+            self._terrain.setFaceHeight(self._intersectorCurrent, 50, type);
+        } else if (type === "groundDown") {
+            self._terrain.setFaceHeight(self._intersectorCurrent, -50, type);
+        }
+        
+        self.setMouseMoved( true );
+
+    }
+
+    this.onDocumentMouseMove = function( event ) {
+        var self = this;
+
+        event.preventDefault();
+
+        self._mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        self._mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        self.setMouseMoved( true );
+
+    }
+
+    this.getHeightFromIntersector = function(intersector, point) {
+        return this._terrain.getHeightFromIntersector(intersector, point);
+    }
+
+    this.getStep = function() {
+        return this._terrain.getStep();
+    }
+
+    this.render = function() {
+        var self = this;
+
+        self._renderer.render(self._scene, self._camera);
+    }
+
+    this.setIntersectorCurrent = function() {
+        var self = this;
+
+        if(self.hasMouseMoved()) {
+            self._intersectorCurrent = self._projector.getIntersector( self._mouse2D, self._camera, self._objects, self._rollOverObj );
+            self.setMouseMoved( false );
+        } 
+    }
+
+    this.setMouseMoved = function( hasMouseMoved ) {
+        this._mouseMoved = hasMouseMoved;
+    }
+
+    this.setRolloverObj = function() {
+        var self = this;
+
+        if ( self._intersectorCurrent ) {
+            self._projector.setRolloverPosition( self._intersectorCurrent );
+            self._rollOverObj.position = self._projector.getRolloverPosition();
+        } else {
+            self._rollOverObj.position = self._projector.getOutOfViewPosition();
+        }
+    }
+
+    this.updateStats = function() {
+        this._stats.update();
     }
 
     this.init();

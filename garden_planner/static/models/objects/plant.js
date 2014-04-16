@@ -52,8 +52,8 @@ extend(THREE.Mesh, Plant);
 Plant.prototype._addToEnvironment = function() {
     var self = this;
 
-    self.environment.addToScene(self);
-    self.environment.addToLists(self);
+    self.environment.addObjToScene(self);
+    self.environment.addObjToLists(self);
 }
 
 // ------------------------------ loadObj Method ------------------------------

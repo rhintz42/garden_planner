@@ -3,15 +3,28 @@ function GardenPlanner() {
 
     this.init = function() {
         _environment = new Environment();
-        _objects = [];
+        render();
     }
 
     this.getEnvironment = function() {
-        return _environment;
+        return this._environment;
     }
+    
+    function render() {
+        var self = this,
+            environment = _environment,
+            i,
+            intersector;
 
-    this.addPlant = function(x, y, z) {
-        _environment.addPlant(x, y, z);
+
+        requestAnimationFrame(render);
+
+        environment.animate();
+        environment.setIntersectorCurrent();
+        environment.setRolloverObj();
+
+        environment.render();
+        environment.updateStats();
     }
 
     this.init();
