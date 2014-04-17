@@ -65,7 +65,7 @@ function Environment() {
         this._scene.init();
     }
 
-    this._initVariables = function() {
+    this._initVariables = function ab() {
         this._initObjects();
 
         this._initScene();
