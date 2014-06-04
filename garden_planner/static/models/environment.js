@@ -53,6 +53,22 @@ function Environment() {
         self._projector = new Projector();
     }
 
+    /*
+    The main thing is to keep this class as a Restful API
+    Have an `initPlantMethods` function that will initialize all methods
+        relating to plants
+        * Do the same for terrain
+
+    this.getPlants = function(plant_ids) {
+        //get and return all the plants that match the plant_ids.
+        //If nothing was passed in, return all of the plants stored in the class
+    }
+
+    this.getPlant = function(plant_id) {
+        //get and return plant
+    }
+    */
+
     this._initProjector = function() {
         this._projector.init(this);
     }
@@ -206,6 +222,7 @@ function Environment() {
         self._renderer.render(self._scene, self._camera);
     }
 
+    // currentIntersector.set
     this.setIntersectorCurrent = function() {
         var self = this;
 
