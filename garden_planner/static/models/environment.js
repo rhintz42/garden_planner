@@ -192,6 +192,8 @@ function Environment() {
         } else if (type === "groundDown") {
             self._terrain.setFaceHeight(self._intersectorCurrent, -50, type);
         }
+
+        
         
         self.setMouseMoved( true );
 

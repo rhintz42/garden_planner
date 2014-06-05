@@ -42,7 +42,11 @@ Projector.prototype.getIntersector = function( mouse2D, camera, objects, rollOve
         raycaster,
         intersects;
         
-    raycaster = self.pickingRay( mouse2D, camera );
+    // Need to have this copy of mouse2D because `self.pickingRay`
+    //  destructively modifies the mouse vector given to it
+    var tmpMouse2D = new THREE.Vector3().copy(mouse2D);
+
+    raycaster = self.pickingRay( tmpMouse2D, camera );
 
     intersects = raycaster.intersectObjects( objects );
     
