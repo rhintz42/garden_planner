@@ -193,7 +193,10 @@ function Environment() {
             self._terrain.setFaceHeight(self._intersectorCurrent, -50, type);
         }
 
-        
+        // First example for adding popup-modal when click on canvas
+        $('#terrain-popup-modal').css("visibility", "visible");
+        $('#terrain-popup-modal').css("top", event.clientY);
+        $('#terrain-popup-modal').css("left", event.clientX);
         
         self.setMouseMoved( true );
 
