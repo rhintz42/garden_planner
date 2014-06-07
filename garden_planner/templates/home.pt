@@ -15,6 +15,7 @@
         <script src="/static/models/objects/plant.js"></script>
         <script src="/static/models/environment.js"></script>
         <script src="/static/controllers/gardenPlanner.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
         <script>
             /*
                 Add Underscore.js
@@ -23,5 +24,9 @@
             var gardenPlanner = new GardenPlanner();
 
         </script>
+
+        <div id="terrain-popup-modal" style="position:absolute; left:100px; top:100px; visibility:hidden;">
+            <p>Hello</p>
+        </div>
     </body>
 </html>
