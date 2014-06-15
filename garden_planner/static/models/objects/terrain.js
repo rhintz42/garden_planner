@@ -12,18 +12,20 @@ function Terrain(environment) {
     self.step = 25;
     self.environment = environment;
 
-    self.mesh = self.createMesh();
+    self.createMesh();
 
     self.createTextures();
 
     self._addToEnvironment();
 }
 
+extend(THREE.Mesh, Terrain);
+
 Terrain.prototype._addToEnvironment = function() {
     var self = this;
 
-    self.environment.addObjToScene(self.mesh);
-    self.environment.addObjToLists(self.mesh);
+    self.environment.addObjToScene(self);
+    self.environment.addObjToLists(self);
 }
 
 Terrain.prototype._removeFromEnvironment = function() {
@@ -57,13 +59,10 @@ Terrain.prototype.createMaterial = function() {
 }
 
 Terrain.prototype.createMesh = function() {
-    var self = this,
-        mesh;
+    var self = this;
 
     //create Mesh
-    mesh = new THREE.Mesh( self.createGeometry(), self.createMaterial() );
-
-    return mesh;
+    THREE.Mesh.call( self, self.createGeometry(), self.createMaterial() );
 }
 
 Terrain.prototype.createTextures = function() {
@@ -121,9 +120,9 @@ Terrain.prototype.getHeightFromIntersector = function(intersector, point) {
     verticeIndexes.push(intersector.face.b);
     verticeIndexes.push(intersector.face.c);
 
-    p1 = self.mesh.geometry.vertices[verticeIndexes[0]];
-    p2 = self.mesh.geometry.vertices[verticeIndexes[1]];
-    p3 = self.mesh.geometry.vertices[verticeIndexes[2]];
+    p1 = self.geometry.vertices[verticeIndexes[0]];
+    p2 = self.geometry.vertices[verticeIndexes[1]];
+    p3 = self.geometry.vertices[verticeIndexes[2]];
 
     det = (p2.z - p3.z) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.z - p3.z);
 
@@ -222,11 +221,11 @@ Terrain.prototype.setFaceHeight = function(faceIndex, heightDif, type) {
 
     verticeIndex = self.getVerticeIndexFromPoint(faceIndex.point);
 
-    newY = self.mesh.geometry.vertices[verticeIndex].y + heightDif;
+    newY = self.geometry.vertices[verticeIndex].y + heightDif;
 
-    self.mesh.geometry.vertices[verticeIndex].y = newY;
+    self.geometry.vertices[verticeIndex].y = newY;
 
-    self.mesh.geometry.verticesNeedUpdate = true;
+    self.geometry.verticesNeedUpdate = true;
 }
 
 Terrain.prototype.getPointXToCol = function(pointX) {
@@ -273,10 +272,10 @@ Terrain.prototype.setFaceTexture = function(faceIndex, terrainType) {
     texture = self.getTexture(terrainType, index);
     texture2 = self.getTexture(terrainType, index+1);
 
-    self.mesh.geometry.faceVertexUvs[0][index] = texture;
-    self.mesh.geometry.faceVertexUvs[0][index+1] = texture2;
+    self.geometry.faceVertexUvs[0][index] = texture;
+    self.geometry.faceVertexUvs[0][index+1] = texture2;
 
-    self.mesh.geometry.uvsNeedUpdate = true;
+    self.geometry.uvsNeedUpdate = true;
 
     return true;
 }
