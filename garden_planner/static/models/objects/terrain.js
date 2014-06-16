@@ -16,12 +16,12 @@ function Terrain(environment) {
 
     self.createTextures();
 
-    self._addToEnvironment();
+    self.addToEnvironment();
 }
 
 extend(THREE.Mesh, Terrain);
 
-Terrain.prototype._addToEnvironment = function() {
+Terrain.prototype.addToEnvironment = function() {
     var self = this;
 
     self.environment.addObjToScene(self);

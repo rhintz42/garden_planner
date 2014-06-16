@@ -1,8 +1,6 @@
 /*
     PUT OPERATION STUFF INTO LIB
     
-    THE LOOPS AND SUCH IN THIS SHOULD BE A CONTROLLER, NOT A MODEL
-        * Make controllers for actions like "edit_terrain" and such
     Things todo
     * Clean up the classes so that they are in different sections
     * Add comments to all of the classes/functions
@@ -10,8 +8,8 @@
     * Create another plant mesh object
 
     * Start focusing on the terrain
-        * Give the terrain a proper texture
-            * Copy from old_garden_planner
+        * Give the terrain a proper texture -- DONE
+            * Copy from old_garden_planner  -- WILL NOT DO
         * Be able to edit the terrain to go up
             * If an object there, the object goes up with the ground
         * Be able to edit the terrain to go down
@@ -26,17 +24,12 @@
         * Be able to sense that a plant area is where about to put another plant
             * Show red if this is the case
     * Be able to rotate the camera
-    * Terrain should not be a subclass of Mesh
+    	* Should be able to rotate the camera 45 degrees
+    * Terrain should not be a subclass of Mesh -- WILL NOT DO
         * Ground and Grid should be subclasses of Terrain and should be created
-            from the terrain class
+            from the terrain class -- WILL NOT DO
     * Look into adding tests
 
-
-
-
-
-NOTES:
-* Not pur
 */
 function Environment() {
 
@@ -89,7 +82,7 @@ function Environment() {
         this._initRenderer();
         this._initProjector();
         this._intersectorCurrent = null;
-        this._mouseMoved = false;
+        this._hasMouseMoved = false;
 
         this._animatedObjects = [];
         this._objects = []
@@ -111,7 +104,11 @@ function Environment() {
     this.addObjToScene = function( obj ) {
         var self = this;
 
-        this._scene.add( obj );
+	var material = new THREE.MeshBasicMaterial({
+			color: 0x0000ff
+	});
+
+	this._scene.add( obj );
     }
 
     this.addPlant = function(x, y, z, type) {
@@ -154,7 +151,7 @@ function Environment() {
     }
 
     this.hasMouseMoved = function() {
-        return this._mouseMoved;
+        return this._hasMouseMoved;
     }
 
     this.init = function() {
@@ -178,8 +175,8 @@ function Environment() {
 
         event.preventDefault();
 
-        self._mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        self._mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        self._mouse2D.x = ( (event.clientX-200) / 600 ) * 2 - 1;
+        self._mouse2D.y = - ( (event.clientY-300) / 500 ) * 2 + 1;
 
         self._intersectorCurrent = self._projector.getIntersector( self._mouse2D, self._camera, self._objects, self._rollOverObj );
 
@@ -207,8 +204,11 @@ function Environment() {
 
         event.preventDefault();
 
-        self._mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        self._mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        //self._mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        //self._mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+        self._mouse2D.x = ( (event.clientX-200) / 600 ) * 2 - 1;
+        self._mouse2D.y = - ( (event.clientY-300) / 500 ) * 2 + 1;
         self.setMouseMoved( true );
 
     }
@@ -238,7 +238,7 @@ function Environment() {
     }
 
     this.setMouseMoved = function( hasMouseMoved ) {
-        this._mouseMoved = hasMouseMoved;
+        this._hasMouseMoved = hasMouseMoved;
     }
 
     this.setRolloverObj = function() {

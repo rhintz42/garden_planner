@@ -1,23 +1,21 @@
 function GardenPlanner() {
-    var _environment;
 
     this.init = function() {
-        _environment = new Environment();
-        render();
+        this._environment = new Environment();
+        this.render();
     }
 
     this.getEnvironment = function() {
         return this._environment;
     }
     
-    function render() {
+    //function render() {
+    this.render = function(self) {
         var self = this,
-            environment = _environment,
-            i,
-            intersector;
+            environment = this._environment;
 
 
-        requestAnimationFrame(render);
+        requestAnimationFrame(this.render.bind(self));
 
         environment.animate();
         environment.setIntersectorCurrent();
