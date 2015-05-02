@@ -2,6 +2,7 @@
     PUT OPERATION STUFF INTO LIB
     
     Things todo
+    * Should have a viewport class that contains camera, projector, renderer and mouse events
     * Clean up the classes so that they are in different sections
     * Add comments to all of the classes/functions
     * Create Diagram of everything to keep track of what I'm doing
@@ -31,7 +32,7 @@
     * Look into adding tests
 
 */
-function Environment() {
+function Environment(container_id) {
 
     this._initCamera = function() {
         this._camera.init();
@@ -66,8 +67,8 @@ function Environment() {
         this._projector.init(this);
     }
 
-    this._initRenderer = function() {
-        this._renderer.init();
+    this._initRenderer = function(container_id) {
+        this._renderer.init(container_id);
     }
 
     this._initScene = function() {
@@ -79,13 +80,14 @@ function Environment() {
 
         this._initScene();
         this._initCamera();   
-        this._initRenderer();
+        this._initRenderer(this._container_id);
         this._initProjector();
         this._intersectorCurrent = null;
         this._hasMouseMoved = false;
 
         this._animatedObjects = [];
-        this._objects = []
+        this._objects = [];
+        this.setCurrentMouseDownSetting('addPlant');
 
         this._stats = new Stats();
         this._stats.domElement.style.position = 'absolute';
@@ -104,11 +106,11 @@ function Environment() {
     this.addObjToScene = function( obj ) {
         var self = this;
 
-	var material = new THREE.MeshBasicMaterial({
-			color: 0x0000ff
-	});
+        var material = new THREE.MeshBasicMaterial({
+                color: 0x0000ff
+        });
 
-	this._scene.add( obj );
+        this._scene.add( obj );
     }
 
     this.addPlant = function(x, y, z, type) {
@@ -154,8 +156,10 @@ function Environment() {
         return this._hasMouseMoved;
     }
 
-    this.init = function() {
+    this.init = function(container_id) {
         var self = this;
+
+        self._container_id = container_id;
 
         self._initVariables();
 
@@ -170,30 +174,98 @@ function Environment() {
         self.setMouseMoved( false );
     }
 
+    this.getCurrentMousePosition = function( event ) {
+        var self = this,
+            yOffset,
+            xOffset,
+            canvasOffset;
+
+        windowOffset = self.getWindowOffset();
+        canvasOffset = self.getCanvasElementOffset();
+
+        yOffset = windowOffset.top - canvasOffset.top;
+        xOffset = windowOffset.left - canvasOffset.left;
+
+        self._mouse2D.x = ( (event.clientX+xOffset) / 600 ) * 2 - 1;
+        self._mouse2D.y = - ( (event.clientY+yOffset) / 500 ) * 2 + 1;
+
+        return self._mouse2D;
+    }
+
+    this.getWindowOffset = function() {
+        var self = this,
+            offset = {};
+        /*
+        var eTop = $('#' + self._container_id).offset().top;
+
+        $(window).scroll(function() {
+            otherOffset = eTop  - $(window).scrollTop();
+        });
+        */
+
+        offset.left = window.top.pageXOffset;
+        offset.top = window.top.pageYOffset;
+
+        return offset;
+    }
+
+    this.getCanvasElementOffset = function() {
+        var self = this,
+            containerEl,
+            canvasOffset;
+
+        containerEl = $('#' + this._container_id);
+        canvasEl = $(containerEl.children()[0]);
+
+        canvasOffset = canvasEl.offset();
+
+        return canvasOffset;
+    }
+
+    this.setCurrentMouseDownSetting = function( setting ) {
+        this._currentMouseDownSetting = setting;
+    }
+
+    this.getCurrentMouseDownSetting = function() {
+        return this._currentMouseDownSetting;
+    }
+
     this.onDocumentMouseDown = function( event ) {
-        var self = this;
+        var self = this,
+            yOffset = window.top.pageYOffset,
+            xOffset = window.top.pageXOffset,
+            currentMode = this.getCurrentMouseDownSetting();
 
         event.preventDefault();
 
-        self._mouse2D.x = ( (event.clientX-200) / 600 ) * 2 - 1;
-        self._mouse2D.y = - ( (event.clientY-300) / 500 ) * 2 + 1;
+        self._mouse2D = self.getCurrentMousePosition( event );
 
         self._intersectorCurrent = self._projector.getIntersector( self._mouse2D, self._camera, self._objects, self._rollOverObj );
 
-        type = "setTexture";
+
+        if (self._intersectorCurrent === null) {
+            return;
+        }
         
-        if(type === "setTexture") {
+        if(currentMode === "setTexture") {
             self._terrain.setFaceTexture(self._intersectorCurrent, 'brick');
-        } else if (type === "groundUp") {
-            self._terrain.setFaceHeight(self._intersectorCurrent, 50, type);
-        } else if (type === "groundDown") {
-            self._terrain.setFaceHeight(self._intersectorCurrent, -50, type);
+        } else if (currentMode === "groundUp") {
+            self._terrain.setFaceHeight(self._intersectorCurrent, 50, currentMode);
+        } else if (currentMode === "groundDown") {
+            self._terrain.setFaceHeight(self._intersectorCurrent, -50, currentMode);
+        } else if (currentMode === "addPlant") {
+            self.addPlant(
+                self._intersectorCurrent.point.x,
+                self._intersectorCurrent.point.y,
+                self._intersectorCurrent.point.z,
+                currentMode
+            );
         }
 
         // First example for adding popup-modal when click on canvas
         $('#terrain-popup-modal').css("visibility", "visible");
-        $('#terrain-popup-modal').css("top", event.clientY);
-        $('#terrain-popup-modal').css("left", event.clientX);
+        $('#terrain-popup-modal').css("top", event.clientY+yOffset);
+        $('#terrain-popup-modal').css("left", event.clientX+xOffset);
         
         self.setMouseMoved( true );
 
@@ -204,11 +276,8 @@ function Environment() {
 
         event.preventDefault();
 
-        //self._mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        //self._mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        self._mouse2D = self.getCurrentMousePosition( event );
 
-        self._mouse2D.x = ( (event.clientX-200) / 600 ) * 2 - 1;
-        self._mouse2D.y = - ( (event.clientY-300) / 500 ) * 2 + 1;
         self.setMouseMoved( true );
 
     }
@@ -232,7 +301,12 @@ function Environment() {
         var self = this;
 
         if(self.hasMouseMoved()) {
-            self._intersectorCurrent = self._projector.getIntersector( self._mouse2D, self._camera, self._objects, self._rollOverObj );
+            self._intersectorCurrent = self._projector.getIntersector(
+                self._mouse2D,
+                self._camera,
+                self._objects,
+                self._rollOverObj
+            );
             self.setMouseMoved( false );
         } 
     }
@@ -256,5 +330,5 @@ function Environment() {
         this._stats.update();
     }
 
-    this.init();
+    this.init(container_id);
 }

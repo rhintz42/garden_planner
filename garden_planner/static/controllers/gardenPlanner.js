@@ -1,7 +1,7 @@
-function GardenPlanner() {
+function GardenPlanner(container_id) {
 
-    this.init = function() {
-        this._environment = new Environment();
+    this.init = function(container_id) {
+        this._environment = new Environment(container_id);
         this.render();
     }
 
@@ -25,5 +25,5 @@ function GardenPlanner() {
         environment.updateStats();
     }
 
-    this.init();
+    this.init(container_id);
 }

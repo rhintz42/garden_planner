@@ -4,10 +4,10 @@ function Renderer() {
 
 extend(THREE.WebGLRenderer, Renderer);
 
-Renderer.prototype.init = function() {
+Renderer.prototype.init = function(container_id) {
     this.setClearColor( 0xf0f0f0 );
 
-    //this.setSize( window.innerWidth, window.innerHeight );
     this.setSize( 600, 500 );
-    document.body.appendChild( this.domElement );
+    var container = document.getElementById(container_id);
+    container.appendChild( this.domElement );
 }

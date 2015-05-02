@@ -11,7 +11,7 @@ Projector.prototype.init = function(environment) {
 
     self._environment = environment;
     self._rolloverPosition = new THREE.Vector3();
-    self._outOfViewPosition = new THREE.Vector3( 0, 0, -1000);
+    self._outOfViewPosition = new THREE.Vector3( 0, 0, -100000);
     self._tmpVec = new THREE.Vector3();
     self._normalMatrix = new THREE.Matrix3();
     self._intersector = undefined;

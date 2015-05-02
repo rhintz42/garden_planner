@@ -1,7 +1,13 @@
 <html>
     <head>
-        <title>My first Three.js app</title>
-        <style>canvas { position:absolute; top:300px; left:200px; }</style>
+        <title>Garden Planner</title>
+        <style>
+            #terrain-container {
+                float: left;
+                clear: both;
+                margin-left: 40px;
+            }
+        </style>
 	<link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     </head>
     <body>
@@ -17,21 +23,19 @@
         <script src="/static/models/environment.js"></script>
         <script src="/static/controllers/gardenPlanner.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-	<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
         <script>
             /*
                 Add Underscore.js
             */
 
-            var gardenPlanner = new GardenPlanner();
+            $(function() {
+                var gardenPlanner = new GardenPlanner('terrain-container');
+            });
 
         </script>
 
-	<div id="header-current-action" style="position:absolute; left: 100px; top:50px">
-		Placeholder
-	</div>
-
-	<div id="header-buttons" style="position:absolute; left: 200px; top:50px">
+	<div id="header-buttons" style="top: 50; float: left;">
 		<!-- Standard button -->
 		<button type="button" class="btn btn-default" value="higher_terrain">Higher Terrain</button>
 
@@ -50,11 +54,6 @@
 		<!-- Indicates a dangerous or potentially negative action -->
 		<button type="button" class="btn btn-danger" value="danger">Danger</button>
 	</div>
-        <div id="terrain-popup-modal" style="position:absolute; left:100px; top:100px; visibility:hidden;">
-            <p>Hello</p>
-        </div>
-	<script>
-		$('.btn').mousedown(function() { alert("Hello"); });
-	</script>
+    <div id="terrain-container"></div>
     </body>
 </html>

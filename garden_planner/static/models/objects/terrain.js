@@ -264,7 +264,7 @@ Terrain.prototype.setFaceTexture = function(faceIndex, terrainType) {
         texture,
         index;
 
-    if(faceIndex ===null)
+    if(faceIndex === null)
         return false;
 
     index = self.getAdjustedFaceIndex(faceIndex);
